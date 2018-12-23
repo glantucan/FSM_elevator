@@ -1,0 +1,82 @@
+<html>
+<head>
+    <meta charset="UTF-8"> 
+</head>
+<body>
+    <script>
+        class cosa {
+            constructor() {
+                this.nombre = "alberto";
+                this.saludar1 = this.saludar1.bind(this);
+            }
+    
+            saludar1() {
+                console.log("Hola " + (this.nombre || "desconocido"));
+            }
+    
+            saludar2() {
+                console.log("Hola " + (this.nombre || "desconocido"));
+            }
+        }
+        var c = new cosa();
+        c.saludar1();
+        c.saludar2();
+    </script>
+    <script>
+        
+        function fakeAjax(url, cb) {
+            var fake_responses = {
+                file1:"The first text",
+                file2:"The second text",
+                file3:"The third text"
+            };
+            var randomDelay = (Math.round(Math.random()*1E4)%8000) + 1000;
+            console.log('Requesting: ' + url);
+            setTimeout( function() {
+                cb(fake_responses[url], randomDelay);
+            }, randomDelay);
+        }
+        
+        function output(text) {
+            console.log(text);
+        }
+
+        function getFile(url){
+            // Must return a promise
+            return new Promise(
+                function(resolve, reject) {
+                    fakeAjax( url, resolve);
+                }
+            );
+            
+        }
+
+
+
+        /*  // Another way to do it with an arbitrarily long list of urls:
+        var urls = ['file1', 'file2', 'file3'];
+        
+        urls.map(getFile)
+        .reduce( function combine(chain, p) {
+            return chain.then( function() {
+                    return p;
+                }).then(output);
+                // We need to change the order of the output because our first promise returns nothing (and actually is not p1)
+            }, Promise.resolve())
+        .then(function(){
+            output('Complete!')
+        }); */
+
+        /* Or we can use Promise.all
+        Promise.all(urls.map(getFile))
+        .then( function(texts) {
+            texts.forEach(console.log);
+            console.log('Complete!');
+            // In this case all results are printed at once when all three promises resolve
+        });
+
+        */
+
+    </script>
+</body>
+</html>

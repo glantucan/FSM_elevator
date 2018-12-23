@@ -1,0 +1,100 @@
+<html>
+<head>
+    <meta charset="UTF-8"> 
+</head>
+<body>
+    <script>
+        
+        function fakeAjax(url, cb) {
+            var fake_responses = {
+                file1:"The first text",
+                file2:"The second text",
+                file3:"The third text"
+            };
+            var randomDelay = (Math.round(Math.random()*1E4)%8000) + 1000;
+            console.log('Requestiong: ' + url);
+            setTimeout( function() {
+                cb(fake_responses[url]);
+            }, randomDelay);
+        }
+        
+        function output(text) {
+            console.log(text);
+        }
+
+        function getFile(url){
+            // what do we do here? ACTIVE THUNK CONSTRUCTOR
+            // If the async operation has resolve will return a function that will execute the callback passed to it with the resceived response passed in as a parameter.
+            // If not, it will return a function that sets the callback passed to it to be executed when the async operation is resolved.
+            var text, fn;
+            fakeAjax(url, function(response) {
+                if (fn) {
+                    fn(response);
+                } else {
+                    text = response;
+                }
+            });
+
+            return function(cb) {
+                if (text) {
+                    cb(text);
+                } else {
+                    fn = cb;
+                }
+            }
+            
+        }
+
+        // Request all files at once in "parallel" -> ???
+        //var getFile1 = getFile('file1');
+        //var getFile2 = getFile('file2');
+        //var getFile3 = getFile('file3');
+        var getFile1 = makeActiveThunk(fakeAjax,'file1');
+        var getFile2 = makeActiveThunk(fakeAjax,'file2');
+        var getFile3 = makeActiveThunk(fakeAjax,'file3');
+        
+        getFile1( function(text1) {
+            output(text1);
+            getFile2(function(text2) {
+                output(text2);
+                getFile3(function(text3) {
+                    output(text3);
+                    output('Complete!');
+                });
+            });
+        });
+
+        // abstract lazy thunk factory
+        function makeLazyThunk(fn) {
+            var args = [].slice.call(arguments, 1); // Take the arguments after the first one
+            return function(cb) {
+                args.push(cb);
+                fn.apply(null, args);
+            }
+        }
+
+        // abstract proactive thunk factory
+        function makeActiveThunk(asyncFn, ...asyncParams) {
+            var response, cbFn;
+            asyncFn(...asyncParams, function(asyncResp) {
+                if (cbFn) {
+                    cbFn(asyncResp);
+                } else {
+                    response = asyncResp;
+                }
+            }); 
+
+            return function(syncCb) {
+                if (response) {
+                    console.log('..... the response already arrived');
+                    syncCb(response);
+                } else {
+                    console.log('..... will have to wait for the response');
+                    cbFn = syncCb;
+                }
+            }
+        }    
+
+    </script>
+</body>
+</html>

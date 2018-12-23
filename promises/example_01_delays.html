@@ -1,0 +1,35 @@
+<html>
+<head>
+    <meta charset="UTF-8"> 
+</head>
+<body>
+    <script>
+        
+        function delay(ms) {
+            return new Promise( 
+                function(resolve, reject) {
+                    setTimeout(function() { resolve(ms); }, ms);
+                });
+        }
+        
+        
+        var total= 0;
+        delay(100)
+            .then( function(delayed) {
+                console.log('Delayed', delayed, 'ms');
+                total += delayed;
+                return delay(50);
+            })
+            .then( function(delayed) {
+                console.log('Delayed', delayed, 'ms');
+                total += delayed;
+                return delay(200);
+            })
+            .then( function(delayed) {
+                console.log('Delayed', delayed, 'ms');
+                total += delayed;
+                console.log('All done! Total delay', total, 'ms');
+            });
+    </script>
+</body>
+</html>
