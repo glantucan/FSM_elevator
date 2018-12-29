@@ -1,5 +1,4 @@
 import FSM from './fsmOOP.js';
-import states from './states.js';
 
 var elevatorDisplay = document.querySelector('.elevator');
 var floor_ypos = [...document.querySelectorAll('.floor .ceiling')]
@@ -49,39 +48,12 @@ var elevatorFSM = FSM.createContext({
     }
 });
 
-var actions = {
-    moveTowardsTarget(ctx, time) {
-        if ((ctx.v < 0 && ctx.y > ctx.yDest) || (ctx.v > 0 && ctx.y < ctx.yDest)) {
-            ctx.y += ctx.v;
-        } else {
-            ctx.y = ctx.yDest;
-            ctx.state = 'idle';
-        }
-    }, 
-    moveToPark(ctx, time) {
-        if ( ctx.y < ctx.yDest ) {
-            ctx.y += ctx.v;
-        } else {
-            ctx.y = ctx.yDest;
-            ctx.state = 'idle';
-        }
-    },
-    setTargetMovementMagnitudes(ctx, targetFloor) {
-        ctx.targetFloor = targetFloor;
-        ctx.yDest = ctx.getFloorPos(ctx.targetFloor);
-        ctx.v = ctx.floor < ctx.targetFloor ? ctx.speed : -ctx.speed;
-    },
-    resetTargetMovementMagnitudes(ctx) {
-        ctx.v = 0;
-        ctx.floor = ctx.targetFloor;
-    }
-}
 
 elevatorFSM.addStates( {
     idle: function (ctx) {
         return {
             enter() {
-                ctx.setStateLater('parking', 5);
+                if (ctx.floor != 0) ctx.setStateLater('parking', 5);
             },
             call(targetFloor) {
                 if (targetFloor != ctx.floor) {
@@ -128,5 +100,33 @@ elevatorFSM.addStates( {
 });
 
 
-elevatorFSM.state = states.IDLE;
+var actions = {
+    moveTowardsTarget(ctx, time) {
+        if ((ctx.v < 0 && ctx.y > ctx.yDest) || (ctx.v > 0 && ctx.y < ctx.yDest)) {
+            ctx.y += ctx.v;
+        } else {
+            ctx.y = ctx.yDest;
+            ctx.state = 'idle';
+        }
+    }, 
+    moveToPark(ctx, time) {
+        if ( ctx.y < ctx.yDest ) {
+            ctx.y += ctx.v;
+        } else {
+            ctx.y = ctx.yDest;
+            ctx.state = 'idle';
+        }
+    },
+    setTargetMovementMagnitudes(ctx, targetFloor) {
+        ctx.targetFloor = targetFloor;
+        ctx.yDest = ctx.getFloorPos(ctx.targetFloor);
+        ctx.v = ctx.floor < ctx.targetFloor ? ctx.speed : -ctx.speed;
+    },
+    resetTargetMovementMagnitudes(ctx) {
+        ctx.v = 0;
+        ctx.floor = ctx.targetFloor;
+    }
+}
+
+elevatorFSM.state = 'idle';
 elevatorFSM.start();
